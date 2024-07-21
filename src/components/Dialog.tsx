@@ -26,12 +26,14 @@ const Dialog = ({ isOpen, onOpenChange, result }: Props) => (
     </DialogTrigger>
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Calculation Result</DialogTitle>
-        <DialogDescription>
-          <p>Gross Salary: LKR {result.grossSalary}</p>
-          <p>Payee Tax: LKR {result.payeeTax}</p>
-          <p>Deductions: LKR {result.deductions}</p>
-          <p>Net Salary: LKR {result.netSalary}</p>
+        <DialogTitle className='text-[#ff6433] font-semibold text-2xl mb-2'>
+          Calculation Result
+        </DialogTitle>
+        <DialogDescription className='text-lg flex flex-col gap-2'>
+          <p>💰 Gross Salary: LKR {result.grossSalary}</p>
+          <p>💸 Payee Tax: LKR {result.payeeTax}</p>
+          <p>🚫 Deductions: LKR {result.deductions}</p>
+          <p>💵 Net Salary: LKR {result.netSalary}</p>
         </DialogDescription>
       </DialogHeader>
     </DialogContent>

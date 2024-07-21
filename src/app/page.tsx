@@ -1,7 +1,8 @@
 'use client';
 
 import Dialog from '@/components/Dialog';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
 
 interface CalculationResult {
   grossSalary: string;
@@ -53,10 +54,6 @@ export default function Home() {
     netSalary: '',
   });
 
-  useEffect(() => {
-    console.log('result', result);
-  }, [result]);
-
   const salaryCal = (rate: number, salaryInUsd: number) => {
     let salary = salaryInUsd * rate;
     const grossSalary = salary.toLocaleString('en-US');
@@ -85,44 +82,49 @@ export default function Home() {
   };
 
   return (
-    <div className='bg-custom-gradient w-screen h-screen flex flex-col justify-center items-center gap-4 p-4 '>
-      <h1 className='text-3xl font-bold text-gray-900 dark:text-white mt-20'>
+    <div className='bg-[#0c0c0c] w-screen h-screen flex flex-col justify-center items-center gap-4 p-4'>
+      <h1 className='text-3xl font-bold text-[#fbfbfc] mt-20'>
         Salary Calculator
       </h1>
-      <p className='text-gray-700 dark:text-gray-300 text-center'>
+      <p className='text-[#999] text-center'>
         Calculate your USD pegged salary after Sri Lankan Payee tax and EPF
         deductions
       </p>
-      <div className='py-5 w-[20rem] mt-1 flex flex-col gap-1.5 items-center justify-center'>
+      <div className='py-5 w-[20rem] mt-1 flex flex-col gap-4 items-center justify-center'>
         <div className='w-full'>
-          <label className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>
+          <label className='block mb-2 text-sm font-medium text-white'>
             Salary in USD
           </label>
-          <input
+          <Input
             type='number'
+            placeholder='100'
             value={salaryUSD}
             onChange={(e) => setSalaryUSD(e.target.value)}
-            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-            placeholder='100'
+            className='bg-[#0c0c0c] border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-white focus:border-white hover:border-gray-400 block w-full p-2.5 transition duration-300 ease-in-out'
             required
           />
         </div>
         <div className='w-full'>
-          <label className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>
+          <label className='block mb-2 text-sm font-medium text-white'>
             USD rate in LKR
           </label>
-          <input
+          <Input
             type='number'
             value={usdRateLKR}
             onChange={(e) => setUsdRateLKR(e.target.value)}
-            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+            className='bg-[#0c0c0c] border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-white focus:border-white hover:border-gray-400 block w-full p-2.5 transition duration-300 ease-in-out'
             placeholder='300'
             required
           />
         </div>
         <button
           type='button'
-          className='text-white bg-violet-700 hover:bg-violet-800 focus:ring-4 focus:ring-violet-300 font-medium rounded-lg text-sm py-2.5 mb-2 focus:outline-none w-full mt-4'
+          className={`text-white font-medium rounded-lg text-sm py-2.5 mb-2 focus:outline-none w-full mt-4
+    ${
+      !salaryUSD || !usdRateLKR
+        ? 'bg-[#ff6433] cursor-not-allowed'
+        : 'bg-[#ff6433] hover:bg-[#da562e] focus:ring-4 focus:ring-blue-300'
+    }`}
           onClick={handleCalculate}
           disabled={!salaryUSD || !usdRateLKR}
         >
@@ -134,7 +136,7 @@ export default function Home() {
         onOpenChange={setIsResultModalOpen}
         result={result}
       />
-      <span className='block mb-2 text-sm font-light text-gray-900 dark:text-white'>
+      <span className='block mb-2 text-sm font-light text-[#9797a0]'>
         &copy; {new Date().getFullYear()} developed by rasangalk. All rights
         reserved.
       </span>
