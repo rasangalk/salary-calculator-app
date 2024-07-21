@@ -1,113 +1,143 @@
-import Image from "next/image";
+'use client';
+
+import Dialog from '@/components/Dialog';
+import { useState, useEffect } from 'react';
+
+interface CalculationResult {
+  grossSalary: string;
+  payeeTax: string;
+  deductions: string;
+  netSalary: string;
+}
+
+const calculateSalaryTax = (annualSalary: number) => {
+  const monthlySalary = annualSalary / 12;
+
+  // Tax not applicable for annual salaries below 1.2M
+  if (annualSalary <= 1200000) {
+    return 0;
+  }
+
+  let tax = 0;
+  let taxableIncome = monthlySalary - 1200000 / 12;
+
+  const taxBrackets = [
+    { limit: 500000 / 12, rate: 0.06 },
+    { limit: 500000 / 12, rate: 0.12 },
+    { limit: 500000 / 12, rate: 0.18 },
+    { limit: 500000 / 12, rate: 0.24 },
+    { limit: 500000 / 12, rate: 0.3 },
+  ];
+
+  for (const bracket of taxBrackets) {
+    if (taxableIncome <= 0) {
+      break;
+    }
+
+    const taxableAtThisRate = Math.min(bracket.limit, taxableIncome);
+    tax += taxableAtThisRate * bracket.rate;
+    taxableIncome -= taxableAtThisRate;
+  }
+
+  return tax;
+};
 
 export default function Home() {
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [salaryUSD, setSalaryUSD] = useState('');
+  const [usdRateLKR, setUsdRateLKR] = useState('');
+  const [result, setResult] = useState<CalculationResult>({
+    grossSalary: '',
+    payeeTax: '',
+    deductions: '',
+    netSalary: '',
+  });
+
+  useEffect(() => {
+    console.log('result', result);
+  }, [result]);
+
+  const salaryCal = (rate: number, salaryInUsd: number) => {
+    let salary = salaryInUsd * rate;
+    const grossSalary = salary.toLocaleString('en-US');
+
+    const annualSalary = salary * 12;
+    let apiit = calculateSalaryTax(annualSalary);
+    const payeeTax = apiit.toLocaleString('en-US');
+
+    let deductions = salary * 0.11 + apiit;
+    let netSalary = salary - deductions;
+
+    setResult({
+      grossSalary: grossSalary,
+      payeeTax: payeeTax,
+      deductions: deductions.toLocaleString('en-US'),
+      netSalary: netSalary.toLocaleString('en-US'),
+    });
+
+    setSalaryUSD('');
+    setUsdRateLKR('');
+  };
+
+  const handleCalculate = () => {
+    salaryCal(Number(usdRateLKR), Number(salaryUSD));
+    setIsResultModalOpen(true);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className='bg-custom-gradient w-screen h-screen flex flex-col justify-center items-center gap-4 p-4 '>
+      <h1 className='text-3xl font-bold text-gray-900 dark:text-white mt-20'>
+        Salary Calculator
+      </h1>
+      <p className='text-gray-700 dark:text-gray-300 text-center'>
+        Calculate your USD pegged salary after Sri Lankan Payee tax and EPF
+        deductions
+      </p>
+      <div className='py-5 w-[20rem] mt-1 flex flex-col gap-1.5 items-center justify-center'>
+        <div className='w-full'>
+          <label className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>
+            Salary in USD
+          </label>
+          <input
+            type='number'
+            value={salaryUSD}
+            onChange={(e) => setSalaryUSD(e.target.value)}
+            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+            placeholder='100'
+            required
+          />
         </div>
+        <div className='w-full'>
+          <label className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>
+            USD rate in LKR
+          </label>
+          <input
+            type='number'
+            value={usdRateLKR}
+            onChange={(e) => setUsdRateLKR(e.target.value)}
+            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+            placeholder='300'
+            required
+          />
+        </div>
+        <button
+          type='button'
+          className='text-white bg-violet-700 hover:bg-violet-800 focus:ring-4 focus:ring-violet-300 font-medium rounded-lg text-sm py-2.5 mb-2 focus:outline-none w-full mt-4'
+          onClick={handleCalculate}
+          disabled={!salaryUSD || !usdRateLKR}
+        >
+          Calculate
+        </button>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <Dialog
+        isOpen={isResultModalOpen}
+        onOpenChange={setIsResultModalOpen}
+        result={result}
+      />
+      <span className='block mb-2 text-sm font-light text-gray-900 dark:text-white'>
+        &copy; {new Date().getFullYear()} developed by rasangalk. All rights
+        reserved.
+      </span>
+    </div>
   );
 }
